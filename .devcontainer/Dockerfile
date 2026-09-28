@@ -1,13 +1,20 @@
-# starts the VeniMapping image from the official ROS 2 Jazzy image
 FROM ros:jazzy
 
-# these commands are executed while the image is built
+ARG TARGETARCH
+
+
+# System and ROS 2 dependencies
 RUN apt-get update && apt-get install -y \
-    #adds packages to retrieve source code, configure C++ builds, and compiler C++ code
+    wget \
     git \
     cmake \
     g++ \
-    #adds ROS specific packages
+    sudo \
+    build-essential \
+    ros-dev-tools \
+    gdb \
+    ccache \
+    python3-venv \
     ros-jazzy-rclcpp \
     ros-jazzy-image-transport \
     ros-jazzy-demo-nodes-cpp \
@@ -16,24 +23,73 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-rosidl-default-generators \
     ros-jazzy-cv-bridge \
     ros-jazzy-rmw-cyclonedds-cpp \
-    # identifies and modifies potential bugs and issues
+    ros-jazzy-launch-pytest \
     clang-tidy-20 \
     clang-tools-20 \
     && rm -rf /var/lib/apt/lists/*
 
-# creates a symlink between /usr/local/bin/run-clang-tidy and /usr/bin/run-clang-tidy-20
+# Make LLVM 20's run-clang-tidy available under the command name expected by the project.
 RUN ln -s /usr/bin/run-clang-tidy-20 /usr/local/bin/run-clang-tidy
 
-# changes the default user to dev and moves it to the /home/dev home directory and gives it access to sudo
+# Create the development user
 RUN usermod -l dev -d /home/dev -m ubuntu \
     && groupmod -n dev ubuntu \
     && echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev
 
-# creates a symlink btw /home/dev/workspace/upstream/ros2-jazzy/install and /opt/ros/jazzy in the dev workspace
+# Create the upstream workspace layout
 RUN mkdir -p /home/dev/workspace/upstream/ros2-jazzy \
     && ln -s /opt/ros/jazzy /home/dev/workspace/upstream/ros2-jazzy/install \
+    && mkdir -p /home/dev/workspace/upstream/vimbax-sdk \
     && chown -R dev:dev /home/dev/workspace
 
-# switches the docker to the dev user
+# Download the architecture-specific Vimba X SDK
+RUN set -eux; \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+        SDK_URL="https://www.alliedvision.com/downloads/software/Vimba_X/VimbaX_Setup-2026-2-Linux64.tar.gz"; \
+        SDK_SHA256="45eb34db03e7311ad3cf309c89fc13ddba8b3fd860082a4698198731963faa44"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        SDK_URL="https://www.alliedvision.com/downloads/software/Vimba_X/VimbaX_Setup-2026-2-Linux_ARM64.tar.gz"; \
+        SDK_SHA256="bc223962fc393878c71a6efce8215ce231cc3089bb1a85fffc6fb6eeee43c091"; \
+    else \
+        echo "Unsupported TARGETARCH: $TARGETARCH"; \
+        exit 1; \
+    fi; \
+    wget -O /tmp/vimbax.tar.gz "$SDK_URL"; \
+    echo "$SDK_SHA256  /tmp/vimbax.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/vimbax.tar.gz \
+        --strip-components=1 \
+        -C /home/dev/workspace/upstream/vimbax-sdk; \
+    rm /tmp/vimbax.tar.gz
+
+
+# Register the Vimba X SDK
+USER root
+
+RUN mkdir -p /etc/udev/rules.d \
+    && git clone \
+        https://github.com/lkaising/vimbax-sdk-bootstrap.git \
+        /tmp/vimbax-sdk-bootstrap \
+    && unset GENICAM_GENTL64_PATH \
+    && /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk install \
+        --yes \
+        --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
+
+ENV GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti
+ENV COLCON_DEFAULTS_FILE=/home/dev/venimapping/.devcontainer/colcon-defaults.yaml
+
 USER dev
+
+RUN git clone \
+        https://github.com/lkaising/vimbax-ros2-driver-bootstrap.git \
+        /tmp/vimbax-ros2-driver-bootstrap \
+    && env -u ROS_DISTRO \
+       -u ROS_VERSION \
+       -u AMENT_PREFIX_PATH \
+       -u COLCON_PREFIX_PATH \
+       /tmp/vimbax-ros2-driver-bootstrap/bootstrap-vimbax-ros2-driver \
+        install \
+        --yes \
+        --ros-underlay /opt/ros/jazzy \
+        --ref v1.0.1-beta1
+
 WORKDIR /home/dev
