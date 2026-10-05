@@ -77,6 +77,10 @@ RUN mkdir -p /etc/udev/rules.d \
 ENV GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti
 ENV COLCON_DEFAULTS_FILE=/home/dev/venimapping/.devcontainer/colcon-defaults.yaml
 
+# Verify that the Vimba X SDK and camera simulator are available
+RUN /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \
+    --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
+
 USER dev
 
 RUN git clone \
