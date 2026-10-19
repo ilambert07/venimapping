@@ -41,4 +41,7 @@ jobs:
             test -L /home/dev/workspace/upstream/ros2-jazzy/install
             test "$(readlink /home/dev/workspace/upstream/ros2-jazzy/install)" = "/opt/ros/jazzy"
             test -f /home/dev/workspace/upstream/ros2-jazzy/install/setup.bash
+            test -f /home/dev/workspace/upstream/vimbax-ros2-driver/install/setup.bash
+            test -d /home/dev/workspace/upstream/vimbax-sdk/cti
+            test -d "$GENICAM_GENTL64_PATH"
           '
