@@ -48,4 +48,11 @@ jobs:
               test -n "$path"
               test -d "$path"
             done
+
+            test -d /opt/venimapping-upstream/.git
+            test "$(git -C /opt/venimapping-upstream rev-parse HEAD)" = "8b9d9ebdfbdc1e5fd7baedaa41068d3f561f17f8"
+
+            test -d /opt/venimapping-upstream/src/venimapping_bringup
+            test -d /opt/venimapping-upstream/src/venimapping_camera
+            test -f /opt/venimapping-upstream/install/setup.bash
           '

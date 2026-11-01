@@ -97,3 +97,26 @@ RUN git clone \
         --ref v1.0.1-beta1
 
 WORKDIR /home/dev
+
+# Clone the upstream VeniMapping project at a pinned commit
+USER root
+
+ARG VENIMAPPING_REF=8b9d9ebdfbdc1e5fd7baedaa41068d3f561f17f8
+
+RUN git clone https://github.com/lkaising/venimapping.git /opt/venimapping-upstream \
+    && git -C /opt/venimapping-upstream checkout "${VENIMAPPING_REF}" \
+    && chown -R dev:dev /opt/venimapping-upstream
+
+# Build the upstream VeniMapping ROS 2 workspace
+USER dev
+
+WORKDIR /opt/venimapping-upstream
+
+RUN bash -c 'source /opt/ros/jazzy/setup.bash \
+    && source /home/dev/workspace/upstream/vimbax-ros2-driver/install/setup.bash \
+    && export GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti \
+    && export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+    && colcon build --symlink-install \
+        --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+
+WORKDIR /home/dev
