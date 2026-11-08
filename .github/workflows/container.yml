@@ -50,6 +50,29 @@ jobs:
             done
           '
 
+      - name: Verify SDK and driver
+        run: |
+          docker run --rm venimapping:test bash -lc '
+            set -eo pipefail
+            id
+            /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \
+              --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
+            log="$(mktemp)"
+            env -u ROS_DISTRO \
+              -u ROS_VERSION \
+              -u AMENT_PREFIX_PATH \
+              -u COLCON_PREFIX_PATH \
+              /tmp/vimbax-ros2-driver-bootstrap/bootstrap-vimbax-ros2-driver \
+              verify \
+              --ros-underlay /opt/ros/jazzy \
+              --sdk-dir /home/dev/workspace/upstream/vimbax-sdk \
+              2>&1 | tee "${log}"
+            if ! grep -Fq "smoke test passed" "${log}"; then
+              echo "driver smoke test did not pass" >&2
+              exit 1
+            fi
+          '
+
       - name: Prepare checkout ownership
         run: |
           id
