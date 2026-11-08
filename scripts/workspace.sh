@@ -2,8 +2,7 @@
 # ------------------------------------------------------------------------------
 #  Filename: workspace.sh
 #
-#  Purpose:  Builds the workspace and generates IDE config (setup), or runs the
-#            full CI sequence including tests and clang-tidy (check).
+#  Purpose:  Builds workspace and IDE config (setup); adds tests and clang-tidy (check).
 #
 #  Usage:    ./scripts/workspace.sh setup|check
 #
@@ -93,8 +92,7 @@ cd -- "${project_root}"
 
 # --- Environment --------------------------------------------------------------
 
-# ROS setup.bash reads unset variables, so nounset is off while env.sh runs.
-# env.sh reports its own errors and returns non-zero on failure.
+# Disable nounset while sourcing ROS setup scripts that may read unset variables.
 step "loading the environment (scripts/env.sh)"
 set +u
 if ! source "${script_dir}/env.sh"; then
@@ -122,7 +120,6 @@ info "ok: ${compile_db#"${project_root}/"}"
 
 # --- Tests --------------------------------------------------------------------
 
-# There are no tests yet: colcon reports "0 tests" and passes.
 if [[ "${mode}" == "check" ]]; then
   step "running the tests (colcon test)"
   colcon test
@@ -145,7 +142,7 @@ if [[ "${mode}" == "check" ]]; then
     exit 1
   fi
 
-  # grep exit status: 0 = findings, 1 = no findings, >1 = the search failed.
+  # grep: 0 = findings, 1 = no findings, >1 = search failure.
   findings_rc=0
   grep -E ": (warning|error): " "${tidy_report}" || findings_rc=$?
   case "${findings_rc}" in

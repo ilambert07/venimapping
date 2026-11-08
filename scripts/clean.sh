@@ -47,7 +47,7 @@ readonly vscode_generated=(
   c_cpp_properties.json ros.env
   c_cpp_properties.json.tmp ros.env.tmp settings.json.tmp
 )
-# ide.sh never overwrites settings.json, so it may hold the user's own edits.
+# Preserve settings.json by default; it may contain user edits.
 readonly vscode_settings="settings.json"
 
 # --- Diagnostics --------------------------------------------------------------
@@ -78,28 +78,28 @@ refuse() {
 }
 
 access_hint() {
-  printf 'fix it, then rerun: sudo chown -R %s:%s %s && chmod -R u+rwX %s' \
-    "$(id -un)" "$(id -gn)" "$1" "$1"
+  local path="${project_root}/$1"
+  printf 'fix it, then rerun: sudo chown -R -- %q %q && chmod -R u+rwX -- %q' \
+    "$(id -un):$(id -gn)" "${path}" "${path}"
 }
 
 usage() {
   cat <<EOF
 Usage: ${BASH_SOURCE[0]} [-n|--dry-run] [-y|--yes] [--settings]
 
-Removes the generated build output and VS Code config, so the next
-./scripts/workspace.sh setup starts from a clean slate. Run it by hand only.
+Removes generated build output and VS Code configuration. Run by hand only.
 
   build/ install/ log/  Their contents are removed and the folders stay (in the
                         dev container they are Docker volume mount points).
                         Symlinks are removed, never followed.
-  .vscode/              Only the files ide.sh generates: c_cpp_properties.json
-                        and ros.env. Any other file stays.
+  .vscode/              Generated c_cpp_properties.json, ros.env, and known
+                        temporary files. Other files stay; see --settings.
 
 Options:
   -n, --dry-run  Show what would be removed, then exit without deleting.
   -y, --yes      Delete without asking. Required when there is no terminal.
-      --settings Also remove .vscode/settings.json. ide.sh only creates it when
-                 it is missing, so it may hold your own edits.
+      --settings Also remove .vscode/settings.json, which may contain your
+                 own edits.
   -h, --help     Show this help.
 
 Never touched: src/ and .venv/. Docker volumes, their mount points and the
@@ -219,8 +219,7 @@ inspect_vscode() {
 }
 
 if [[ ! -d "${project_root}/src" || ! -f "${project_root}/scripts/workspace.sh" ]]; then
-  refuse "${project_root} does not look like the venimapping project root" \
-    "expected src/ and scripts/workspace.sh next to scripts/clean.sh"
+  refuse "${project_root} does not look like the venimapping project root"
 fi
 
 cd -- "${project_root}"
@@ -302,13 +301,3 @@ fi
 # --- Summary ------------------------------------------------------------------
 
 printf '\n%s[venimapping] clean finished in %ss%s\n' "${C_GREEN}" "${SECONDS}" "${C_RESET}"
-cat <<EOF
-
-Next steps:
-  1. ./scripts/workspace.sh setup
-     Rebuilds the workspace and regenerates the VS Code config.
-  2. Open a new terminal once setup has finished. A shell that sourced the
-     overlay before the clean keeps that environment, including paths into
-     the removed folders.
-  3. In VS Code: Developer: Reload Window.
-EOF
