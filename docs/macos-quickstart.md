@@ -1,3 +1,5 @@
+# TODO
+
 # VeniMapping macOS Development Setup Guide
 
 ## Overview
@@ -56,12 +58,10 @@ You should see the project files and directories, including `.devcontainer`.
 
 During the initial build, keep VS Code open. If VS Code prompts you to install recommended extensions, allow the installation if appropriate.
 
-The first image build downloads the Vimba X SDK and builds the camera driver. On the GitHub-hosted CI runners, this build takes 3.5 to 5 minutes. The build time on a Mac is not measured yet.
-
 Once the process finishes, the project should reopen inside the container, with the working repository located at:
 
 ```text
-/home/dev/workspace/project/venimapping
+/home/dev/venimapping
 ```
 
 ## Verify the Environment
@@ -69,7 +69,7 @@ Once the process finishes, the project should reopen inside the container, with 
 Open a new terminal in VS Code. Make sure you are in the repository root:
 
 ```bash
-cd /home/dev/workspace/project/venimapping
+cd /home/dev/venimapping
 ```
 
 Activate the project's environment:
@@ -87,28 +87,6 @@ Confirm that the output indicates:
 
 If any component is missing or inactive, resolve the environment issue before continuing.
 
-## Verify the SDK and the Camera Driver
-
-Run the SDK check:
-
-```bash
-/tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \
-  --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
-```
-
-The SDK check passes when the output contains `verify PASSED` with at least one transport layer and one camera. The camera is the Vimba X camera simulator.
-
-Run the driver check:
-
-```bash
-env -u ROS_DISTRO -u ROS_VERSION -u AMENT_PREFIX_PATH -u COLCON_PREFIX_PATH \
-  /tmp/vimbax-ros2-driver-bootstrap/bootstrap-vimbax-ros2-driver verify \
-  --ros-underlay /opt/ros/jazzy \
-  --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
-```
-
-The driver tool refuses to run when these four variables are set, so the command removes them. The driver check runs `vimbax_camera_node` against the simulator for 8 seconds. It passes only when the output contains `smoke test passed`. If the output shows `[OK] smoke_test` but no `smoke test passed` line, the tool skipped the smoke test. Treat a skipped smoke test as a failure.
-
 ## Build the Workspace
 
 From the repository root, run:
@@ -122,8 +100,6 @@ This command builds the ROS 2 packages in the workspace.
 Confirm that the command completes successfully and that the final build summary reports both `venimapping_bringup` and `venimapping_camera` as finished.
 
 Warnings may appear during compilation. A warning alone does not necessarily indicate failure; check the final summary and the command's exit status.
-
-The build prints one expected CMake warning for `venimapping_bringup`. The warning says that `CMAKE_EXPORT_COMPILE_COMMANDS` was not used. That package compiles no code, so the setting has no effect on it. The colcon summary then shows `1 package had stderr output: venimapping_bringup`.
 
 ## Configure IDE Support
 
@@ -146,14 +122,6 @@ From the repository root, run:
 ```
 
 Confirm that the script exits successfully and reports no findings.
-
-The summary can miss findings. It prints `no findings` when the only findings come from `clang-analyzer-*` checks. The script also exits 0 when clang-tidy reports findings. To see every finding, search the raw report:
-
-```bash
-grep -E ": (warning|error): " build/venimapping_camera/tidy/report.txt
-```
-
-No output means no findings. CI runs the same search and fails the job on any match. A local `./scripts/tidy.sh check` does not fail on findings.
 
 ## Troubleshooting
 
@@ -185,12 +153,6 @@ colcon build --symlink-install
 
 Confirm that the workspace build and IDE setup completed successfully. Then reopen the relevant source file and check the editor's diagnostics.
 
-## Do Not Publish the Image
-
-The image contains the Vimba X SDK. This project does not publish the image. Do not push it to a public container registry.
-
-The SDK terms are in the container. Open `/home/dev/workspace/upstream/vimbax-sdk/doc/legalInformation.html` and follow the link under "Terms and Conditions for Using Free Vimba X Software".
-
 ## Final Verification Checklist
 
 Before considering the setup complete, confirm that:
@@ -201,5 +163,5 @@ Before considering the setup complete, confirm that:
 - [ ] `./scripts/ide.sh` completes successfully.
 - [ ] `./scripts/tidy.sh check` completes successfully with no findings.
 - [ ] VS Code resolves `rclcpp` and `vimbax_camera_msgs`.
-- [ ] The SDK check prints `verify PASSED`, and the driver check prints `smoke test passed`.
+- [ ] The camera driver passes the project's simulator verification.
 - [ ] The setup instructions have been tested by another person on a clean Mac.

@@ -1,45 +1,36 @@
 # VeniMapping
 
-VeniMapping is a ROS 2 project. It uses the Allied Vision Vimba X SDK and
-the Vimba X ROS 2 camera driver.
+A ROS 2 project using the Allied Vision Vimba X SDK and ROS 2 camera driver.
+
+<!-- TODO: Add project overview and usage documentation. -->
 
 ## Development setup
 
-There are two supported ways to develop VeniMapping.
-
-1. Native Ubuntu 24.04. This is the main development machine. Three
-   bootstrap tools build its environment:
+1. **Native Ubuntu 24.04** — the main development environment. Set it up with
    [ros2-jazzy-bootstrap](https://github.com/lkaising/ros2-jazzy-bootstrap),
-   [vimbax-sdk-bootstrap](https://github.com/lkaising/vimbax-sdk-bootstrap),
-   and
+   [vimbax-sdk-bootstrap](https://github.com/lkaising/vimbax-sdk-bootstrap), and
    [vimbax-ros2-driver-bootstrap](https://github.com/lkaising/vimbax-ros2-driver-bootstrap).
-2. The VS Code dev container in `.devcontainer/`, for Apple Silicon Macs.
-   The image installs ROS 2 Jazzy from apt and runs the SDK and driver
-   bootstrap tools. To start, follow the
-   [macOS development setup guide](docs/macos-quickstart.md).
+2. **VS Code dev container (Apple Silicon Macs)** — follow the
+   [macOS quickstart](docs/macos-quickstart.md).
 
-Both setups put ROS 2 Jazzy, the Vimba X SDK, and the driver under
-`~/workspace/upstream`. `scripts/env.sh` checks these paths before it
-sources anything.
+## Useful commands
 
-## Dev container requirements
-
-- An Apple Silicon Mac
-- Docker Desktop
-- Visual Studio Code
-- The Microsoft Dev Containers extension
-- Access to the VeniMapping Git repository
-
-## Checks
-
-Run these commands from the repository root, in either setup.
+Run from the repository root in your development environment:
 
 ```bash
-source scripts/env.sh
-colcon build --symlink-install
-./scripts/ide.sh
-./scripts/tidy.sh check
+source scripts/env.sh         # Load the environment
+colcon build --symlink-install # Build the workspace
+./scripts/ide.sh              # Generate VS Code configuration
+./scripts/tidy.sh check       # Run clang-tidy
+./scripts/workspace.sh check  # Run the full build, tests and clang-tidy checks
 ```
 
-CI runs the same commands in the dev container image on Linux amd64 and
-arm64. See `.github/workflows/container.yml`.
+Connect to the running dev container from an outside terminal. Run from the
+checkout root on your host; the environment loads automatically:
+
+```bash
+docker exec -it -u dev \
+  -w /home/dev/workspace/project/venimapping \
+  "$(docker ps -q --filter "label=devcontainer.local_folder=$(pwd)")" \
+  bash
+```
