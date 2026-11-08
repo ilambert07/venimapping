@@ -65,10 +65,16 @@ RUN set -eux; \
 # Register the Vimba X SDK
 USER root
 
+ARG SDK_BOOTSTRAP_COMMIT=70ce1fe0c77bd66a49ffcc53aad0c8948ea48102
+
 RUN mkdir -p /etc/udev/rules.d \
     && git clone \
         https://github.com/lkaising/vimbax-sdk-bootstrap.git \
         /tmp/vimbax-sdk-bootstrap \
+    && git -C /tmp/vimbax-sdk-bootstrap checkout --detach \
+        "$SDK_BOOTSTRAP_COMMIT" \
+    && test "$(git -C /tmp/vimbax-sdk-bootstrap rev-parse HEAD)" \
+        = "$SDK_BOOTSTRAP_COMMIT" \
     && unset GENICAM_GENTL64_PATH \
     && /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk install \
         --yes \
@@ -83,9 +89,15 @@ RUN /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \
 
 USER dev
 
+ARG DRIVER_BOOTSTRAP_COMMIT=c1c1ab2e90681cbe1da1bae221a2140aec41a9e5
+
 RUN git clone \
         https://github.com/lkaising/vimbax-ros2-driver-bootstrap.git \
         /tmp/vimbax-ros2-driver-bootstrap \
+    && git -C /tmp/vimbax-ros2-driver-bootstrap checkout --detach \
+        "$DRIVER_BOOTSTRAP_COMMIT" \
+    && test "$(git -C /tmp/vimbax-ros2-driver-bootstrap rev-parse HEAD)" \
+        = "$DRIVER_BOOTSTRAP_COMMIT" \
     && env -u ROS_DISTRO \
        -u ROS_VERSION \
        -u AMENT_PREFIX_PATH \
