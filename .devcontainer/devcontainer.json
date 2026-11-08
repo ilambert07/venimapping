@@ -7,10 +7,13 @@
     "workspaceFolder": "/home/dev/workspace/project/venimapping",
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/workspace/project/venimapping,type=bind",
     "mounts": [
-        "source=venimapping-build,target=${containerWorkspaceFolder}/build,type=volume",
-        "source=venimapping-install,target=${containerWorkspaceFolder}/install,type=volume",
-        "source=venimapping-log,target=${containerWorkspaceFolder}/log,type=volume"
+        "source=venimapping-build-${devcontainerId},target=${containerWorkspaceFolder}/build,type=volume",
+        "source=venimapping-install-${devcontainerId},target=${containerWorkspaceFolder}/install,type=volume",
+        "source=venimapping-log-${devcontainerId},target=${containerWorkspaceFolder}/log,type=volume"
     ],
+    "otherPortsAttributes": {
+        "onAutoForward": "ignore"
+    },
     "customizations": {
         "vscode": {
             "extensions": [
