@@ -44,7 +44,7 @@ jobs:
             test -f /home/dev/workspace/upstream/vimbax-ros2-driver/install/setup.bash
             test -d /home/dev/workspace/upstream/vimbax-sdk/cti
             test -n "$GENICAM_GENTL64_PATH"
-            printf '%s' "$GENICAM_GENTL64_PATH" | tr ':' '\n' | while IFS= read -r path; do
+            printf "%s\n" "$GENICAM_GENTL64_PATH" | tr ":" "\n" | while IFS= read -r path; do
               test -n "$path"
               test -d "$path"
             done
