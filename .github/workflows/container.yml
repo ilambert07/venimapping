@@ -48,11 +48,39 @@ jobs:
               test -n "$path"
               test -d "$path"
             done
-
-            test -d /opt/venimapping-upstream/.git
-            test "$(git -C /opt/venimapping-upstream rev-parse HEAD)" = "8b9d9ebdfbdc1e5fd7baedaa41068d3f561f17f8"
-
-            test -d /opt/venimapping-upstream/src/venimapping_bringup
-            test -d /opt/venimapping-upstream/src/venimapping_camera
-            test -f /opt/venimapping-upstream/install/setup.bash
           '
+
+      - name: Prepare checkout ownership
+        run: |
+          id
+          stat -c '%u:%g %n' "$GITHUB_WORKSPACE"
+          dev_owner="$(docker run --rm --entrypoint sh venimapping:test -c 'echo "$(id -u):$(id -g)"')"
+          echo "dev owner: ${dev_owner}"
+          sudo chown -R "${dev_owner}" "$GITHUB_WORKSPACE"
+
+      - name: Build and check the checkout
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/home/dev/venimapping" \
+            -w /home/dev/venimapping \
+            venimapping:test bash -lc '
+              set -eo pipefail
+              source scripts/env.sh
+              colcon build --symlink-install
+              test -s build/venimapping_camera/compile_commands.json
+              grep -q "/home/dev/venimapping/src/venimapping_camera/" build/venimapping_camera/compile_commands.json
+              colcon test
+              colcon test-result --verbose
+              ./scripts/ide.sh
+              ./scripts/tidy.sh check
+              report=build/venimapping_camera/tidy/report.txt
+              grep -q "/home/dev/venimapping/src/venimapping_camera/" "${report}"
+              if grep -E ": (warning|error): " "${report}"; then
+                echo "clang-tidy reported findings" >&2
+                exit 1
+              fi
+            '
+
+      - name: Restore checkout ownership
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
