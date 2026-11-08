@@ -84,7 +84,11 @@ RUN mkdir -p /etc/udev/rules.d \
         --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
 
 ENV GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti
-ENV COLCON_DEFAULTS_FILE=/home/dev/workspace/project/venimapping/.devcontainer/colcon-defaults.yaml
+
+# Project mount point. Keep in sync with workspaceFolder in devcontainer.json
+# and the -v/-w paths in .github/workflows/container.yml.
+ENV VENIMAPPING_ROOT=/home/dev/workspace/project/venimapping
+ENV COLCON_DEFAULTS_FILE=${VENIMAPPING_ROOT}/.devcontainer/colcon-defaults.yaml
 
 # Verify that the Vimba X SDK and camera simulator are available
 RUN /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \
@@ -110,5 +114,20 @@ RUN git clone \
         --yes \
         --ros-underlay /opt/ros/jazzy \
         --ref v1.0.1-beta1
+
+# Load ROS 2, the Vimba X driver and the project overlay (scripts/env.sh) in
+# every interactive Bash shell of the dev user. /etc/bash.bashrc returns early
+# in non-interactive shells, so CI and lifecycle commands are unaffected.
+USER root
+
+RUN printf '%s\n' \
+    '' \
+    '# venimapping: load the project environment for the dev user' \
+    'if [ "$(id -un)" = dev ] && [ -n "${VENIMAPPING_ROOT:-}" ] && [ -f "${VENIMAPPING_ROOT}/scripts/env.sh" ]; then' \
+    '    source "${VENIMAPPING_ROOT}/scripts/env.sh"' \
+    'fi' \
+    >> /etc/bash.bashrc
+
+USER dev
 
 WORKDIR /home/dev

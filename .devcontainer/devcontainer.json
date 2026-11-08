@@ -19,5 +19,5 @@
             ]
         }
     },
-    "postCreateCommand": "sudo chown -R dev:dev ${containerWorkspaceFolder}/build ${containerWorkspaceFolder}/install ${containerWorkspaceFolder}/log"
+    "postCreateCommand": "sudo chown -R dev:dev ${containerWorkspaceFolder}/build ${containerWorkspaceFolder}/install ${containerWorkspaceFolder}/log && bash ${containerWorkspaceFolder}/scripts/workspace.sh setup"
 }
