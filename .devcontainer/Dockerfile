@@ -38,10 +38,11 @@ RUN usermod -l dev -d /home/dev -m ubuntu \
     && groupmod -n dev ubuntu \
     && echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev
 
-# Create the upstream workspace layout
+# Create the workspace layout: upstream dependencies and the project mount point's parent
 RUN mkdir -p /home/dev/workspace/upstream/ros2-jazzy \
     && ln -s /opt/ros/jazzy /home/dev/workspace/upstream/ros2-jazzy/install \
     && mkdir -p /home/dev/workspace/upstream/vimbax-sdk \
+    && mkdir -p /home/dev/workspace/project \
     && chown -R dev:dev /home/dev/workspace
 
 # Download the architecture-specific Vimba X SDK
@@ -83,7 +84,7 @@ RUN mkdir -p /etc/udev/rules.d \
         --sdk-dir /home/dev/workspace/upstream/vimbax-sdk
 
 ENV GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti
-ENV COLCON_DEFAULTS_FILE=/home/dev/venimapping/.devcontainer/colcon-defaults.yaml
+ENV COLCON_DEFAULTS_FILE=/home/dev/workspace/project/venimapping/.devcontainer/colcon-defaults.yaml
 
 # Verify that the Vimba X SDK and camera simulator are available
 RUN /tmp/vimbax-sdk-bootstrap/bootstrap-vimbax-sdk verify \

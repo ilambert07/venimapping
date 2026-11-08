@@ -4,12 +4,12 @@
         "dockerfile": "Dockerfile"
     },
     "remoteUser": "dev",
-    "workspaceFolder": "/home/dev/venimapping",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/venimapping,type=bind",
+    "workspaceFolder": "/home/dev/workspace/project/venimapping",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/workspace/project/venimapping,type=bind",
     "mounts": [
-        "source=venimapping-build,target=/home/dev/venimapping/build,type=volume",
-        "source=venimapping-install,target=/home/dev/venimapping/install,type=volume",
-        "source=venimapping-log,target=/home/dev/venimapping/log,type=volume"
+        "source=venimapping-build,target=${containerWorkspaceFolder}/build,type=volume",
+        "source=venimapping-install,target=${containerWorkspaceFolder}/install,type=volume",
+        "source=venimapping-log,target=${containerWorkspaceFolder}/log,type=volume"
     ],
     "customizations": {
         "vscode": {
@@ -19,5 +19,5 @@
             ]
         }
     },
-    "postCreateCommand": "sudo chown -R dev:dev /home/dev/venimapping/build /home/dev/venimapping/install /home/dev/venimapping/log"
+    "postCreateCommand": "sudo chown -R dev:dev ${containerWorkspaceFolder}/build ${containerWorkspaceFolder}/install ${containerWorkspaceFolder}/log"
 }

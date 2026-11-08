@@ -85,20 +85,20 @@ jobs:
       - name: Build and check the checkout
         run: |
           docker run --rm \
-            -v "$GITHUB_WORKSPACE:/home/dev/venimapping" \
-            -w /home/dev/venimapping \
+            -v "$GITHUB_WORKSPACE:/home/dev/workspace/project/venimapping" \
+            -w /home/dev/workspace/project/venimapping \
             venimapping:test bash -lc '
               set -eo pipefail
               source scripts/env.sh
               colcon build --symlink-install
               test -s build/venimapping_camera/compile_commands.json
-              grep -q "/home/dev/venimapping/src/venimapping_camera/" build/venimapping_camera/compile_commands.json
+              grep -q "/home/dev/workspace/project/venimapping/src/venimapping_camera/" build/venimapping_camera/compile_commands.json
               colcon test
               colcon test-result --verbose
               ./scripts/ide.sh
               ./scripts/tidy.sh check
               report=build/venimapping_camera/tidy/report.txt
-              grep -q "/home/dev/venimapping/src/venimapping_camera/" "${report}"
+              grep -q "/home/dev/workspace/project/venimapping/src/venimapping_camera/" "${report}"
               if grep -E ": (warning|error): " "${report}"; then
                 echo "clang-tidy reported findings" >&2
                 exit 1

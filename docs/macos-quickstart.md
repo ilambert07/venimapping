@@ -61,7 +61,7 @@ The first image build downloads the Vimba X SDK and builds the camera driver. On
 Once the process finishes, the project should reopen inside the container, with the working repository located at:
 
 ```text
-/home/dev/venimapping
+/home/dev/workspace/project/venimapping
 ```
 
 ## Verify the Environment
@@ -69,7 +69,7 @@ Once the process finishes, the project should reopen inside the container, with 
 Open a new terminal in VS Code. Make sure you are in the repository root:
 
 ```bash
-cd /home/dev/venimapping
+cd /home/dev/workspace/project/venimapping
 ```
 
 Activate the project's environment:
