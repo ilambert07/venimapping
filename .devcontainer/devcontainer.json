@@ -10,6 +10,14 @@
         "source=venimapping-build,target=/home/dev/venimapping/build,type=volume",
         "source=venimapping-install,target=/home/dev/venimapping/install,type=volume",
         "source=venimapping-log,target=/home/dev/venimapping/log,type=volume"
-    ], 
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-python.python"
+            ]
+        }
+    },
     "postCreateCommand": "sudo chown -R dev:dev /home/dev/venimapping/build /home/dev/venimapping/install /home/dev/venimapping/log"
 }

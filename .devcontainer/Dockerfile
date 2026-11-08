@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     ccache \
     python3-venv \
     ros-jazzy-rclcpp \
+    ros-jazzy-rclcpp-components \
     ros-jazzy-image-transport \
     ros-jazzy-demo-nodes-cpp \
     ros-jazzy-demo-nodes-py \
@@ -24,6 +25,7 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-cv-bridge \
     ros-jazzy-rmw-cyclonedds-cpp \
     ros-jazzy-launch-pytest \
+    ros-jazzy-ament-cmake-gtest \
     clang-tidy-20 \
     clang-tools-20 \
     && rm -rf /var/lib/apt/lists/*
