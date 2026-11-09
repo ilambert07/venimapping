@@ -36,6 +36,7 @@ readonly camera_src="${project_root}/src/venimapping_camera/"
 readonly camera_build="${project_root}/build/venimapping_camera"
 readonly compile_db="${camera_build}/compile_commands.json"
 readonly tidy_report="${camera_build}/tidy/report.txt"
+readonly colcon_defaults="${project_root}/.devcontainer/colcon-defaults.yaml"
 
 # --- Diagnostics --------------------------------------------------------------
 
@@ -103,6 +104,10 @@ fi
 set -u
 
 # --- Build --------------------------------------------------------------------
+
+# Only the image sets COLCON_DEFAULTS_FILE. Native hosts need this fallback for
+# the compilation database checked below.
+export COLCON_DEFAULTS_FILE="${COLCON_DEFAULTS_FILE:-${colcon_defaults}}"
 
 step "building the workspace (colcon build --symlink-install)"
 colcon build --symlink-install

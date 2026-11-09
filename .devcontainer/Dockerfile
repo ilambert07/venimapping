@@ -85,8 +85,8 @@ RUN mkdir -p /etc/udev/rules.d \
 
 ENV GENICAM_GENTL64_PATH=/home/dev/workspace/upstream/vimbax-sdk/cti
 
-# Project mount point. Keep in sync with workspaceFolder in devcontainer.json
-# and the -v/-w paths in .github/workflows/container.yml.
+# Project mount point. Keep in sync with workspaceFolder and workspaceMount in
+# devcontainer.json and the workspace paths in .github/workflows/container.yml.
 ENV VENIMAPPING_ROOT=/home/dev/workspace/project/venimapping
 ENV COLCON_DEFAULTS_FILE=${VENIMAPPING_ROOT}/.devcontainer/colcon-defaults.yaml
 
@@ -117,7 +117,9 @@ RUN git clone \
 
 # Load ROS 2, the Vimba X driver and the project overlay (scripts/env.sh) in
 # every interactive Bash shell of the dev user. /etc/bash.bashrc returns early
-# in non-interactive shells, so CI and lifecycle commands are unaffected.
+# in non-interactive shells. The Dev Containers CLI probes the environment with
+# an interactive login shell, so devcontainer exec and lifecycle commands
+# inherit it.
 USER root
 
 RUN printf '%s\n' \
